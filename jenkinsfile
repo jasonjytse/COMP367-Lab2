@@ -1,16 +1,54 @@
-pipeline {
+pipeline { 
     agent any
-    tools {
-        maven 'maven'
-        jdk 'jdk'
+    tools{
+        maven "maven"
+        git "git"
+    }
+    environment {
+        DOCKERHUB_PWD=credentials('DockerHub_Token')
+        dockerRegistry = "jasonjytse/COMP367Lab3"
+        dockerImage = ''
     }
     stages {
-        stage('Build') {
+        stage("Check Out") {
             steps {
-                dir('comp367'){
-                    sh 'mvn -B -DskipTests clean package'
+                git branch: 'main', url: 'https://github.com/jasonjytse/COMP367-Lab2'
+            }
+        }
+        
+        stage("Build maven project") {
+            steps {
+                sh "mvn clean package"
+            }
+        }
+        stage("Unit Test") {
+            steps {
+                sh "mvn test"
+            }
+        }
+        stage("Docker build") {
+            steps {
+                sh 'docker build -f dockerfile -t jasonjytse/comp367_lab3:latest .'
+                sh 'pwd'
+                sh 'ls'
+                /*
+                script {
+                    dockerImage = docker.build registry
                 }
+                */
+            }   
+        }
+        stage("DockerHub Upload") {
+            steps {
+                sh 'docker login -u jasonjytse -p ${DOCKERHUB_PWD}'
+                sh 'docker push jasonjytse/comp367_lab3:latest'
+                /* script {
+                    docker.withRegistry('', ${DOCKERHUB_PWD})
+                    dockerImage.push()
+                }
+                */
             }
         }
     }
 }
+
