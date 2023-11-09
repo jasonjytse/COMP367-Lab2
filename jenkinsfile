@@ -6,8 +6,6 @@ pipeline {
     }
     environment {
         DOCKERHUB_PWD=credentials('DockerHub_Token')
-        dockerRegistry = "jasonjytse/COMP367Lab3"
-        dockerImage = ''
     }
     stages {
         stage("Check Out") {
@@ -31,22 +29,16 @@ pipeline {
                 sh 'docker build -f dockerfile -t jasonjytse/comp367_lab3:latest .'
                 sh 'pwd'
                 sh 'ls'
-                /*
-                script {
-                    dockerImage = docker.build registry
-                }
-                */
-            }   
+           }   
         }
-        stage("DockerHub Upload") {
+        stage("Docker login") {
             steps {
                 sh 'docker login -u jasonjytse -p ${DOCKERHUB_PWD}'
+            }   
+        }
+        stage("Docker push") {
+            steps {
                 sh 'docker push jasonjytse/comp367_lab3:latest'
-                /* script {
-                    docker.withRegistry('', ${DOCKERHUB_PWD})
-                    dockerImage.push()
-                }
-                */
             }
         }
     }
